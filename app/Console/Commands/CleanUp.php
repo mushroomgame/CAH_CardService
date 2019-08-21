@@ -31,7 +31,7 @@ class CleanUp extends Command
     {
         $result = DB::table('cards')->where([
             ['votes', '>=', 100],
-            ['vote_up/votes', '<', '0.03']
+            [DB::raw('`vote_up`/`votes`'), '<', '0.03']
         ])->update(
             ['enabled' => false]
         );
