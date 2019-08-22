@@ -11,6 +11,20 @@ use Illuminate\Support\Facades\DB;
 class CardController extends BaseController
 {
     /**
+     * 获取当前版本信息
+     *
+     * @param Request $request
+     * @return Response
+     */
+    function getVersion(Request $request)
+    {
+        return response()->json([
+            'status' => 'success',
+            'version' => 1
+        ]);
+    }
+
+    /**
      * 获取数据库中的卡牌
      *
      * @param Request $request
