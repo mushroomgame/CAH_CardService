@@ -26,14 +26,19 @@ class CardController extends BaseController
                 ['enabled', '=', true]
             ]);
 
-        if ($tags != null) $result = $result->whereRaw('0'); 
-        
-        foreach (json_decode($tags) as $tag)
+        if ($tags != null) $result = $result->where(function ($query) use ($tags)
         {
-            $result = $result->orWhereRaw("JSON_CONTAINS(tags, '?')", [$tag]);
-        }
+            $query = $query->whereRaw('0');
 
-        return response()->json($result);
+            foreach (json_decode($tags) as $tag)
+            {
+                $query = $query->orWhereRaw('JSON_CONTAINS(`tags`, ?)', json_encode($tag));
+            }
+        });
+
+        DB::connection()->enableQueryLog();
+
+        return response()->json($result->get());
     }
 
     /**
@@ -55,11 +60,9 @@ class CardController extends BaseController
             
         ]);
 
-        return response()->json($result === true ?
-        [
+        return response()->json($result ? [
             'status' => 'success'
-        ] :
-        [
+        ] : [
             'status' => 'failed',
             'reason' => 'Unknown'
         ]);
@@ -75,25 +78,34 @@ class CardController extends BaseController
      */
     function modCard(Request $request, $type, $id)
     {
+        //Authorize
+        $secret = $request->input('secret');
+        if ($secret != env('APP_SECRET'))
+        {
+            return response()->json([
+                'status' => 'failed',
+                'reason' => 'Not authorized.'
+            ]);
+        }
+
+        //Combine params
+        $sum = [];
         $text = $request->input('text');
         $tags = $request->input('tags');
+        if ($text) $sum['text'] = $text;
+        if ($tags) $sum['tags'] = $tags;
 
         $result = DB::table('cards')->where([
             ['id', '=', $id],
             ['type', '=', $type]
-        ])->update(
-            ['text' => $text],
-            ['tags' => $tags]
-        );
+        ])->update($sum);
 
-        return response()->json($result === true ?
-            [
-                'status' => 'success'
-            ] :
-            [
-                'status' => 'failed',
-                'reason' => 'Unknown'
-            ]);
+        return response()->json($result ? [
+            'status' => 'success'
+        ] : [
+            'status' => 'failed',
+            'reason' => 'Unknown'
+        ]);
     }
 
     /**
@@ -106,23 +118,21 @@ class CardController extends BaseController
      */
     function voteCard(Request $request, $type, $id)
     {
-        $state = $request->input('state');
+        $up = $request->input('up');
 
         $result = DB::table('cards')->where([
             ['id', '=', $id],
             ['type', '=', $type]
         ])->increment('votes');
 
-        if ($state == "up") $result = $result && DB::table('cards')->where([
+        if ($up === 'true') $result = $result && DB::table('cards')->where([
             ['id', '=', $id],
             ['type', '=', $type]
         ])->increment('vote_up');
-        
-        return response()->json($result === true ?
-        [
+
+        return response()->json($result ? [
             'status' => 'success'
-        ] :
-        [
+        ] : [
             'status' => 'failed',
             'reason' => 'Unknown'
         ]);

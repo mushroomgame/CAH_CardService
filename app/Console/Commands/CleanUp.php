@@ -36,9 +36,6 @@ class CleanUp extends Command
             ['enabled' => false]
         );
 
-        if($result === true)
-            $this->info("Successfully cleaned up.");
-        else
-            $this->line("Nothing happened.");
+        $this->info("Cleaned up ".$result." cards.");
     }
 }

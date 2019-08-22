@@ -19,7 +19,7 @@ class CreateCardsTable extends Migration
             $table->enum('type', ['whitecards', 'blackcards'])
                 ->comment('Type of this card. White for answers and black for questions.');
             $table->text('text')
-                ->comment('Text on this card. Variaties enabled.');
+                ->comment('Text on this card. Variables enabled.');
             $table->json('tags')
                 ->comment('Tags on this card.');
             
@@ -29,10 +29,7 @@ class CreateCardsTable extends Migration
             $table->unsignedInteger('vote_up')->default(0)
                 ->comment('Number of voting-ups to this card');
             $table->boolean('enabled')->default(true)
-                ->comment('Has this been cleaned up. Cleaned-up cards wont show up.');
-            
-            //Timestamp
-            $table->timestamps();
+                ->comment('Has this been cleaned up. Not-enabled cards wont show up.');
         });
     }
 
