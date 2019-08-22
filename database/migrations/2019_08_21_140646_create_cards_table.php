@@ -19,7 +19,7 @@ class CreateCardsTable extends Migration
             $table->enum('type', ['whitecards', 'blackcards'])
                 ->comment('Type of this card. White for answers and black for questions.');
             $table->text('text')
-                ->comment('Text on this card. Variables enabled.');
+                ->comment('Text on this card. Varibles enabled.');
             $table->json('tags')
                 ->comment('Tags on this card.');
             

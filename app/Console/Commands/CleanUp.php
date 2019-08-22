@@ -36,6 +36,6 @@ class CleanUp extends Command
             ['enabled' => false]
         );
 
-        $this->info("Cleaned up ".$result." cards.");
+        $this->info("Cleaned up $result cards.");
     }
 }
