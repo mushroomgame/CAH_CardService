@@ -73,7 +73,7 @@ class CardController extends BaseController
             'status' => 'success'
         ] : [
             'status' => 'failed',
-            'reason' => 'Unknown'
+            'reason' => 'Nothing happened.'
         ]);
     }
 
