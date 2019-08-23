@@ -49,7 +49,7 @@ class Handler extends ExceptionHandler
     {
         return response()->json([
             "status" => "failed",
-            "reason" => $exception
+            "reason" => $exception->getMessage()
         ]);
         //return parent::render($request, $exception);
     }

@@ -13,10 +13,18 @@
 
 $router->get('/', 'CardController@getVersion');
 
-$router->get('/{type}', 'CardController@getCards');
+$router->group(['middleware' => 'App\Http\Middleware\Type', 'prefix' => '{type}'], function () use ($router){
 
-$router->post('/{type}', 'CardController@addCard');
+    $router->get('/', 'CardController@getCards');
 
-$router->put('/{type}/{id}', 'CardController@modCard');
+    $router->post('/', 'CardController@addCard');
 
-$router->post('/{type}/votes/{id}', 'CardController@voteCard');
+    $router->post('/votes/{id}', 'CardController@voteCard');
+
+    $router->group(['middleware' => 'App\Http\Middleware\Auth'], function () use ($router){
+
+        $router->put('/{id}', 'CardController@modCard');
+
+        $router->delete('/{id}', 'CardController@deleteCard');
+    });
+});

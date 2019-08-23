@@ -28,29 +28,24 @@ class CardController extends BaseController
      * 获取数据库中的卡牌
      *
      * @param Request $request
-     * @param string $type
      * @return Response
      */
-    function getCards(Request $request, $type)
+    function getCards(Request $request)
     {
+        $type = $request->type;
         $tags = $request->input('tags');
 
-        $result = DB::table('cards')->where([
-                ['type', '=', $type],
-                ['enabled', '=', true]
-            ]);
+        $result = DB::table($type)->where('status', 1);
 
-        if ($tags != null) $result = $result->where(function ($query) use ($tags)
+        if ($tags != null) $result->where(function ($query) use ($tags)
         {
-            $query = $query->whereRaw('0');
+            $query->whereRaw('0');
 
             foreach (json_decode($tags) as $tag)
             {
-                $query = $query->orWhereRaw('JSON_CONTAINS(`tags`, ?)', json_encode($tag));
+                $query->orWhereRaw('JSON_CONTAINS(`tags`, ?)', json_encode($tag));
             }
         });
-
-        DB::connection()->enableQueryLog();
 
         return response()->json($result->get());
     }
@@ -59,19 +54,19 @@ class CardController extends BaseController
      * 添加一张卡牌
      *
      * @param Request $request
-     * @param string $type
      * @return Response
      */
-    function addCard(Request $request, $type)
+    function addCard(Request $request)
     {
+        $type = $request->type;
         $text = $request->input('text');
         $tags = $request->input('tags');
 
-        $result = DB::table('cards')->insert([
-                'type' => $type,
-                'text' => $text,
-                'tags' => $tags
-            
+        $result = DB::table($type)->insert([
+            'text' => $text,
+            'tags' => $tags,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
         ]);
 
         return response()->json($result ? [
@@ -86,39 +81,52 @@ class CardController extends BaseController
      * 修改一张卡牌
      *
      * @param Request $request
-     * @param string $type
-     * @param int $id
      * @return Response
      */
-    function modCard(Request $request, $type, $id)
+    function modCard(Request $request)
     {
-        //Authorize
-        $secret = $request->input('secret');
-        if ($secret != env('APP_SECRET'))
-        {
-            return response()->json([
-                'status' => 'failed',
-                'reason' => 'Not authorized.'
-            ]);
-        }
+        $type = $request->type;
+        $id = $request->id;
 
         //Combine params
-        $sum = [];
+        $sum = [
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
         $text = $request->input('text');
         $tags = $request->input('tags');
+        $status = $request->input('status');
         if ($text) $sum['text'] = $text;
         if ($tags) $sum['tags'] = $tags;
+        if ($status) $sum['status'] = $status;
 
-        $result = DB::table('cards')->where([
-            ['id', '=', $id],
-            ['type', '=', $type]
-        ])->update($sum);
+        $result = DB::table($type)->where('_id', $id)->update($sum);
 
         return response()->json($result ? [
             'status' => 'success'
         ] : [
             'status' => 'failed',
-            'reason' => 'Unknown'
+            'reason' => 'Nothing happened.'
+        ]);
+    }
+
+    /**
+     * 删除一张卡牌
+     *
+     * @param Request $request
+     * @return Response
+     */
+    function deleteCard(Request $request, $type, $id)
+    {
+        $type = $request->type;
+        $id = $request->id;
+
+        $result = DB::table($type)->where('_id', $id)->delete();
+
+        return response()->json($result ? [
+            'status' => 'success'
+        ] : [
+            'status' => 'failed',
+            'reason' => 'Nothing happened.'
         ]);
     }
 
@@ -126,29 +134,24 @@ class CardController extends BaseController
      * 给卡牌投票
      *
      * @param Request $request
-     * @param string $type
-     * @param int id
      * @return Response
      */
-    function voteCard(Request $request, $type, $id)
+    function voteCard(Request $request)
     {
-        $up = $request->input('up');
+        $type = $request->type;
+        $id = $request->id;
+        $vote = $request->input('vote');
 
-        $result = DB::table('cards')->where([
-            ['id', '=', $id],
-            ['type', '=', $type]
-        ])->increment('votes');
+        $result = DB::table($type)->where('_id', $id)->increment('plays');
 
-        if ($up === 'true') $result = $result && DB::table('cards')->where([
-            ['id', '=', $id],
-            ['type', '=', $type]
-        ])->increment('vote_up');
+        if ($vote == 'up') $result = $result &&
+            DB::table($type)->where('_id', $id)->increment('votes');
 
         return response()->json($result ? [
             'status' => 'success'
         ] : [
             'status' => 'failed',
-            'reason' => 'Unknown'
+            'reason' => 'Nothing happened.'
         ]);
     }
 }

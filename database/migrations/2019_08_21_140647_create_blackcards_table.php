@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateCardsTable extends Migration
+class CreateBlackcardsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,23 +13,24 @@ class CreateCardsTable extends Migration
      */
     public function up()
     {
-        Schema::create('cards', function (Blueprint $table) {
+        Schema::create('blackcards', function (Blueprint $table) {
             //General infomation
-            $table->bigIncrements('id');
-            $table->enum('type', ['whitecards', 'blackcards'])
-                ->comment('Type of this card. White for answers and black for questions.');
+            $table->bigIncrements('_id');
             $table->text('text')
                 ->comment('Text on this card. Varibles enabled.');
             $table->json('tags')
                 ->comment('Tags on this card.');
             
             //Vote on cards. Auto-cleanup.
+            $table->unsignedInteger('plays')->default(0)
+            ->comment('Number of plays to this card.');
             $table->unsignedInteger('votes')->default(0)
-                ->comment('Number of votes to this card.');
-            $table->unsignedInteger('vote_up')->default(0)
-                ->comment('Number of voting-ups to this card');
-            $table->boolean('enabled')->default(true)
-                ->comment('Has this been cleaned up. Not-enabled cards wont show up.');
+                ->comment('Number of supports to this card');
+            $table->boolean('status')->default(1)
+                ->comment('Is this card enabled. Not-enabled cards wont show up.');
+            
+            //Timestamps
+            $table->timestamps();
         });
     }
 
@@ -40,6 +41,6 @@ class CreateCardsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('cards');
+        Schema::dropIfExists('blackcards');
     }
 }

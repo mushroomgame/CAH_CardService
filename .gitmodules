@@ -1,0 +1,3 @@
+[submodule "storage/cards"]
+	path = storage/cards
+	url = https://github.com/mushroomgame/Cards_Against_Humanity_ZH.git
