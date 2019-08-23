@@ -21,6 +21,8 @@ A岛讨论串: https://adnmb2.com/t/19601054
 ```bash
 git clone --recurse-submodules https://github.com/mushroomgame/CAH_CardService.git 
 cd CAH_CardService
+cp .env.example .env
+vim .env
 composer i
 php artisan migrate --seed
 ```
